@@ -1,3 +1,5 @@
+'use client';
+
 import { Metadata } from 'next';
 import Header from './components/Header';
 import ReviewListApi from './components/ReviewListApi';
