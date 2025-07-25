@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Like from '../assets/img/like.svg';
@@ -48,7 +48,7 @@ type ReviewCardProps = {
     updateLikeCount: (id: string, count: number) => void;
 };
 
-const ReviewCard = ({
+const ReviewCardInner = ({
     review,
     setSelectedCategory,
     formatTimestamp,
@@ -65,7 +65,7 @@ const ReviewCard = ({
     } | null>(null);
     const [showReactions, setShowReactions] = useState(false);
 
-    const hoverTimeout = useRef<NodeJS.Timeout | null>(null); // dùng ref để giữ timeout ID
+    const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
 
     const reactions = React.useMemo(
         () => [
@@ -101,6 +101,7 @@ const ReviewCard = ({
             setReact(null);
         }
     }, [review._id.$oid, reactions]);
+
     useEffect(() => {
         fetchUserLike();
     }, [fetchUserLike]);
@@ -150,7 +151,7 @@ const ReviewCard = ({
         <div
             onMouseLeave={() => {
                 if (hoverTimeout.current) {
-                    clearTimeout(hoverTimeout.current); // rời chuột sớm thì không gọi
+                    clearTimeout(hoverTimeout.current);
                     hoverTimeout.current = null;
                 }
                 setShowReactions(false);
@@ -297,9 +298,9 @@ const ReviewCard = ({
                             onMouseEnter={() => {
                                 hoverTimeout.current = setTimeout(() => {
                                     setShowReactions(true);
-                                }, 1000); // sau 1 giây mới hiển thị bảng cảm xúc
+                                }, 1000);
                             }}
-                            className="relative group flex flex-row items-center justify-center h-full w-full "
+                            className="relative group flex flex-row items-center justify-center h-full w-full"
                         >
                             {react ? (
                                 <Image
@@ -316,7 +317,9 @@ const ReviewCard = ({
                                 />
                             )}
                             <div
-                                className={`font-rubik ml-[3px] ${react ? '' : 'text-gray-500'}`}
+                                className={`font-rubik ml-[3px] ${
+                                    react ? '' : 'text-gray-500'
+                                }`}
                                 style={
                                     react ? { color: react.color } : undefined
                                 }
@@ -325,7 +328,9 @@ const ReviewCard = ({
                             </div>
                         </div>
                         <div
-                            className={`absolute top-[-38px] left-0 w-[282px] border border-gray-300 bg-white shadow-md p-1 rounded-4xl text-sm z-50 flex space-x-2 absolute-slide-up ${showReactions ? 'show-reactions' : ''}`}
+                            className={`absolute top-[-38px] left-0 w-[282px] border border-gray-300 bg-white shadow-md p-1 rounded-4xl text-sm z-50 flex space-x-2 absolute-slide-up ${
+                                showReactions ? 'show-reactions' : ''
+                            }`}
                         >
                             {reactions.map((reaction, index) => (
                                 <Image
@@ -368,4 +373,24 @@ const ReviewCard = ({
     );
 };
 
-export default ReviewCard;
+export default function ReviewCard({
+    review,
+    setSelectedCategory,
+    formatTimestamp,
+    loadData,
+    likeCounts,
+    updateLikeCount,
+}: ReviewCardProps) {
+    return (
+        <Suspense fallback={<div>Đang tải thẻ đánh giá...</div>}>
+            <ReviewCardInner
+                review={review}
+                setSelectedCategory={setSelectedCategory}
+                formatTimestamp={formatTimestamp}
+                loadData={loadData}
+                likeCounts={likeCounts}
+                updateLikeCount={updateLikeCount}
+            />
+        </Suspense>
+    );
+}
