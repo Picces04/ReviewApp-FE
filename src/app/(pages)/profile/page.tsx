@@ -1,17 +1,10 @@
-import { Metadata } from 'next';
-import Header from './components/Header';
-import ReviewListApi from './components/ReviewListApi';
+import ReviewListApi from '@/app/components/ReviewListApi';
 
-export const metadata: Metadata = {
-    title: 'ReviewApp',
-};
-
-export default function Home() {
+const Profile = () => {
     return (
         <>
             <div className="main bg-[#E5EBFF] min-h-screen h-full  ">
                 <div className="max-w-[1280px] m-auto">
-                    <Header />
                     <div className="min-h-[600px]">
                         <ReviewListApi />
                     </div>
@@ -24,4 +17,6 @@ export default function Home() {
             </div>
         </>
     );
-}
+};
+
+export default Profile;
