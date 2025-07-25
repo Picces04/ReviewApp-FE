@@ -13,7 +13,7 @@ import {
 import Form from './Form';
 import Link from 'next/link';
 import api from '../axios/api';
-import { useAppRouter } from '../routes/route';
+import { useAppRouter } from '../routes/useAppRouter';
 import { setUser, clearUser, setLoading } from '../login/redux/userSlice';
 import { RootState } from '../login/redux/store';
 
