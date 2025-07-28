@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Lấy baseURL từ biến môi trường, mặc định là localhost:8000 nếu không có
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://reviewapp-be.onrender.com';
 
 const api = axios.create({
     baseURL,
