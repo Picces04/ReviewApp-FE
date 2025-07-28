@@ -10,9 +10,12 @@ import React, { useState } from 'react';
 import api from '../axios/api';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { setUser, setLoading } from '../login/redux/userSlice';
 
 const Login = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
     const [isSignUp, setIsSignUp] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
     const [formData, setFormData] = useState({
@@ -48,7 +51,6 @@ const Login = () => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        // Kiểm tra password trước khi submit
         if (isSignUp && formData.Password !== formData.ConfirmPassword) {
             setPasswordError('Passwords không trùng nhau');
             return;
@@ -60,26 +62,38 @@ const Login = () => {
         const endpoint = isSignUp ? '/register' : '/login';
 
         try {
-            await api.post(endpoint, { email, password });
-
+            dispatch(setLoading(true));
             if (isSignUp) {
+                await api.post(endpoint, { email, password, username: (email as string).split('@')[0] });
                 alert('Đăng ký thành công, vui lòng đăng nhập.');
                 setIsSignUp(false);
             } else {
-                // Token đã được lưu trong cookie bởi backend, không cần lưu ở đây
-                console.log('Login successful, redirecting with useRouter...');
-                router.push('/');
+                await api.post(endpoint, { email, password });
+                // Gọi /me để lấy thông tin người dùng
+                const meRes = await api.get('/me', { withCredentials: true });
+                if (meRes.data && meRes.data.username) {
+                    dispatch(setUser({
+                        username: meRes.data.username,
+                        zone: meRes.data.zone,
+                    }));
+                    console.log('Login successful, redirecting to home...');
+                    router.push('/');
+                } else {
+                    throw new Error('Không lấy được thông tin người dùng');
+                }
             }
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
                 const message =
                     err.response?.data?.detail ||
                     err.response?.data?.message ||
-                    'Link ngrok sai hoặc là xác thực link ngrok đi';
+                    'Lỗi xác thực, vui lòng kiểm tra email và mật khẩu';
                 alert(message);
             } else {
                 alert('Lỗi không xác định.');
             }
+        } finally {
+            dispatch(setLoading(false));
         }
     };
 

@@ -16,6 +16,7 @@ import api from '../axios/api';
 import { useAppRouter } from '../routes/useAppRouter';
 import { setUser, clearUser, setLoading } from '../login/redux/userSlice';
 import { RootState } from '../login/redux/store';
+import Cookies from 'js-cookie';
 
 const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
 
@@ -28,15 +29,23 @@ const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { navigateToLogin } = useAppRouter();
-
     const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
 
-    
     useEffect(() => {
-        const checkLoginStatus = async () => {
+        const checkLoginStatus = async (retries = 5, delay = 1000) => {
             try {
                 dispatch(setLoading(true));
-               
+                const token = Cookies.get('token');
+                if (!token && retries > 0) {
+                    console.log(`Token chưa sẵn sàng, thử lại sau ${delay}ms...`);
+                    setTimeout(() => checkLoginStatus(retries - 1, delay), delay);
+                    return;
+                }
+
+                if (!token) {
+                    throw new Error('Không tìm thấy token sau nhiều lần thử');
+                }
+
                 const res = await api.get('/me', { withCredentials: true });
                 if (res.data && res.data.username) {
                     dispatch(setUser({
@@ -46,20 +55,40 @@ const Header = () => {
                 } else {
                     dispatch(clearUser());
                 }
-            } catch (error) {
-                console.error('Lỗi kiểm tra trạng thái đăng nhập:', error);
-                dispatch(clearUser());
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    console.error('Lỗi kiểm tra trạng thái đăng nhập:', error.message);
+                } else {
+                    console.error('Lỗi kiểm tra trạng thái đăng nhập:', error);
+                }
+                interface ApiError {
+                    response?: {
+                        status?: number;
+                    };
+                }
+                if (
+                    typeof error === 'object' &&
+                    error &&
+                    'response' in error &&
+                    (error as ApiError).response?.status === 401
+                ) {
+                    console.log('Token không hợp lệ hoặc hết hạn, chuyển hướng đến login...');
+                    Cookies.remove('token');
+                    dispatch(clearUser());
+                    navigateToLogin();
+                } else {
+                    dispatch(clearUser());
+                }
             } finally {
                 dispatch(setLoading(false));
             }
         };
 
-        if (!isLoggedIn && !hasAttemptedLogin) {
+        if (!hasAttemptedLogin) {
             setHasAttemptedLogin(true);
             checkLoginStatus();
         }
-    }, [dispatch, isLoggedIn, hasAttemptedLogin]);
-
+    }, [dispatch, hasAttemptedLogin, navigateToLogin]);
 
     const openForm = () => {
         setIsOpen(true);
@@ -68,10 +97,12 @@ const Header = () => {
     const handleLogout = async () => {
         try {
             await api.post('/logout', {}, { withCredentials: true });
+            Cookies.remove('token');
             dispatch(clearUser());
             navigateToLogin();
         } catch (error) {
             console.error('Lỗi đăng xuất:', error);
+            Cookies.remove('token');
             dispatch(clearUser());
             navigateToLogin();
         }
