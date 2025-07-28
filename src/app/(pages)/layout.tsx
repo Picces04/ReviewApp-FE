@@ -1,5 +1,6 @@
 import { Metadata } from 'next/types';
 import Header from '../components/Header';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
     title: 'Profile | ReviewApp',
@@ -11,7 +12,11 @@ export default function ProfileLayout({
 }) {
     return (
         <div className="profile-layout">
-            <Header />
+            <Suspense
+                fallback={<div className="text-center">Đang tải ...</div>}
+            >
+                <Header />
+            </Suspense>
             {children}
         </div>
     );
