@@ -26,27 +26,20 @@ const Header = () => {
     const { isLoggedIn, user, isLoading } = useTypedSelector(
         state => state.user
     );
+
     const [isOpen, setIsOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { navigateToLogin } = useAppRouter();
     const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
 
     useEffect(() => {
-        const checkLoginStatus = async (retries = 5, delay = 1000) => {
+        const checkLoginStatus = async () => {
             try {
                 dispatch(setLoading(true));
-                const token = Cookies.get('token');
-                if (!token && retries > 0) {
-                    console.log(`Token chưa sẵn sàng, thử lại sau ${delay}ms...`);
-                    setTimeout(() => checkLoginStatus(retries - 1, delay), delay);
-                    return;
-                }
 
-                if (!token) {
-                    throw new Error('Không tìm thấy token sau nhiều lần thử');
-                }
-
+                // Không cần kiểm tra token trong cookie nữa
                 const res = await api.get('/me', { withCredentials: true });
+
                 if (res.data && res.data.username) {
                     dispatch(setUser({
                         username: res.data.username,
@@ -61,11 +54,13 @@ const Header = () => {
                 } else {
                     console.error('Lỗi kiểm tra trạng thái đăng nhập:', error);
                 }
+
                 interface ApiError {
                     response?: {
                         status?: number;
                     };
                 }
+
                 if (
                     typeof error === 'object' &&
                     error &&
@@ -73,7 +68,6 @@ const Header = () => {
                     (error as ApiError).response?.status === 401
                 ) {
                     console.log('Token không hợp lệ hoặc hết hạn, chuyển hướng đến login...');
-                    Cookies.remove('token');
                     dispatch(clearUser());
                     navigateToLogin();
                 } else {
@@ -89,6 +83,7 @@ const Header = () => {
             checkLoginStatus();
         }
     }, [dispatch, hasAttemptedLogin, navigateToLogin]);
+
 
     const openForm = () => {
         setIsOpen(true);
