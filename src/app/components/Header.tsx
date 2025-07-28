@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useSelector, useDispatch, TypedUseSelectorHook } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -21,7 +21,6 @@ const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 const Header = () => {
     const pathname = usePathname();
-    const searchParams = useSearchParams();
     const dispatch = useDispatch();
     const { isLoggedIn, user, isLoading } = useTypedSelector(
         state => state.user
@@ -30,7 +29,7 @@ const Header = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { navigateToLogin } = useAppRouter();
 
-    const loginParam = searchParams.get('login');
+    const [hasAttemptedLogin, setHasAttemptedLogin] = useState(false);
 
     useEffect(() => {
         const checkLoginStatus = async () => {
@@ -38,12 +37,10 @@ const Header = () => {
                 dispatch(setLoading(true));
                 const res = await api.get('/me', { withCredentials: true });
                 if (res.data && res.data.username) {
-                    dispatch(
-                        setUser({
-                            username: res.data.username,
-                            zone: res.data.zone,
-                        })
-                    );
+                    dispatch(setUser({
+                        username: res.data.username,
+                        zone: res.data.zone,
+                    }));
                 } else {
                     dispatch(clearUser());
                 }
@@ -55,11 +52,12 @@ const Header = () => {
             }
         };
 
-        // Chỉ gọi API nếu chưa có user hoặc khi loginParam thay đổi
-        if (!user || loginParam) {
+        if (!isLoggedIn && !hasAttemptedLogin) {
+            setHasAttemptedLogin(true);
             checkLoginStatus();
         }
-    }, [loginParam, user, dispatch]);
+    }, [dispatch, isLoggedIn, hasAttemptedLogin]);
+
 
     const openForm = () => {
         setIsOpen(true);
