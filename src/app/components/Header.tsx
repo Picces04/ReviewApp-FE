@@ -16,7 +16,6 @@ import api from '../axios/api';
 import { useAppRouter } from '../routes/useAppRouter';
 import { setUser, clearUser, setLoading } from '../login/redux/userSlice';
 import { RootState } from '../login/redux/store';
-import Cookies from 'js-cookie';
 
 const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
 
@@ -37,14 +36,7 @@ const Header = () => {
         const checkLoginStatus = async () => {
             try {
                 dispatch(setLoading(true));
-                // Kiểm tra cookie trước khi gọi API
-                const token = Cookies.get('token'); 
-                if (!token) {
-                    console.log('Token chưa sẵn sàng, thử lại sau 500ms...');
-                    setTimeout(checkLoginStatus, 500); // Retry sau 500ms
-                    return;
-                }
-
+               
                 const res = await api.get('/me', { withCredentials: true });
                 if (res.data && res.data.username) {
                     dispatch(setUser({
