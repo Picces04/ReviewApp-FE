@@ -14,8 +14,8 @@ import Form from './Form';
 import Link from 'next/link';
 import api from '../axios/api';
 import { useAppRouter } from '../routes/useAppRouter';
-import { setUser, clearUser, setLoading } from '../login/redux/userSlice';
-import { RootState } from '../login/redux/store';
+import { setUser, clearUser, setLoading } from '@/app/login/redux/userSlice';
+import { RootState } from '@/app/login/redux/store';
 import Cookies from 'js-cookie';
 
 const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
@@ -41,16 +41,21 @@ const Header = () => {
                 const res = await api.get('/me', { withCredentials: true });
 
                 if (res.data && res.data.username) {
-                    dispatch(setUser({
-                        username: res.data.username,
-                        zone: res.data.zone,
-                    }));
+                    dispatch(
+                        setUser({
+                            username: res.data.username,
+                            zone: res.data.zone,
+                        })
+                    );
                 } else {
                     dispatch(clearUser());
                 }
             } catch (error: unknown) {
                 if (error instanceof Error) {
-                    console.error('Lỗi kiểm tra trạng thái đăng nhập:', error.message);
+                    console.error(
+                        'Lỗi kiểm tra trạng thái đăng nhập:',
+                        error.message
+                    );
                 } else {
                     console.error('Lỗi kiểm tra trạng thái đăng nhập:', error);
                 }
@@ -67,7 +72,9 @@ const Header = () => {
                     'response' in error &&
                     (error as ApiError).response?.status === 401
                 ) {
-                    console.log('Token không hợp lệ hoặc hết hạn, chuyển hướng đến login...');
+                    console.log(
+                        'Token không hợp lệ hoặc hết hạn, chuyển hướng đến login...'
+                    );
                     dispatch(clearUser());
                     navigateToLogin();
                 } else {
@@ -83,7 +90,6 @@ const Header = () => {
             checkLoginStatus();
         }
     }, [dispatch, hasAttemptedLogin, navigateToLogin]);
-
 
     const openForm = () => {
         setIsOpen(true);

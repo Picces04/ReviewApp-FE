@@ -7,16 +7,17 @@ import {
 } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react';
-import api from '../axios/api';
+import api from '@/app/axios/api';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
-import { setUser, setLoading } from '../login/redux/userSlice';
+import { setUser, setLoading } from '@/app/login/redux/userSlice';
 
 const Login = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const [isSignUp, setIsSignUp] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [hasInteracted, setHasInteracted] = useState(false);
     const [formData, setFormData] = useState({
         Email: '',
@@ -64,18 +65,23 @@ const Login = () => {
         try {
             dispatch(setLoading(true));
             if (isSignUp) {
-                await api.post(endpoint, { email, password, username: (email as string).split('@')[0] });
+                await api.post(endpoint, {
+                    email,
+                    password,
+                    username: (email as string).split('@')[0],
+                });
                 alert('Đăng ký thành công, vui lòng đăng nhập.');
                 setIsSignUp(false);
             } else {
                 await api.post(endpoint, { email, password });
-                // Gọi /me để lấy thông tin người dùng
                 const meRes = await api.get('/me', { withCredentials: true });
                 if (meRes.data && meRes.data.username) {
-                    dispatch(setUser({
-                        username: meRes.data.username,
-                        zone: meRes.data.zone,
-                    }));
+                    dispatch(
+                        setUser({
+                            username: meRes.data.username,
+                            zone: meRes.data.zone,
+                        })
+                    );
                     console.log('Login successful, redirecting to home...');
                     router.push('/');
                 } else {
@@ -98,15 +104,15 @@ const Login = () => {
     };
 
     return (
-        <div className="main bg-[#E5EBFF] min-h-screen h-full ">
-            <div className="max-w-[1280px] m-auto">
-                <div className="min-w-[76%] flex items-center justify-center h-[calc(100vh-80px)]">
-                    <div className="flex relative w-[950px] min-h-[600px] bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-[#E5EBFF] flex items-center justify-center ">
+            <div className="w-full max-w-[1280px] px-4">
+                <div className="flex flex-col md:flex-row items-center justify-center min-h-[600px]">
+                    <div className="flex relative w-full max-w-[950px] min-h-[400px] md:min-h-[600px] bg-white rounded-xl shadow-lg overflow-hidden">
                         <form
                             onSubmit={handleSubmit}
-                            className={`flex flex-col justify-center items-center w-[590px] bg-white transition-transform duration-700 ease-in-out transform ${isSignUp ? 'translate-x-[360px]' : 'translate-x-0'}`}
+                            className={`flex flex-col justify-center items-center w-full md:w-[590px] md:py-5 bg-white transition-transform duration-700 ease-in-out transform ${isSignUp ? 'md:translate-x-[360px]' : 'md:translate-x-0'}`}
                         >
-                            <h1 className="mb-6 text-[#41B49F] text-4xl font-rubik font-semibold">
+                            <h1 className="mb-6 text-[#41B49F] text-2xl sm:text-3xl md:text-4xl font-rubik font-semibold text-center">
                                 {isSignUp
                                     ? 'Create Account'
                                     : 'Sign in to ReviewApp'}
@@ -117,17 +123,17 @@ const Login = () => {
                                         <button
                                             type="button"
                                             key={i}
-                                            className="flex justify-center items-center w-[40px] h-[40px] mr-3 border border-gray-300 rounded-full hover:bg-gray-100 transition duration-300"
+                                            className="flex justify-center items-center w-10 h-10 mr-3 border border-gray-300 rounded-full hover:bg-gray-100 transition duration-300"
                                         >
                                             <FontAwesomeIcon
                                                 icon={icon}
-                                                className={`text-[20px] ${i === 1 ? 'ml-[1px]' : ''}`}
+                                                className={`text-lg ${i === 1 ? 'ml-[1px]' : ''}`}
                                             />
                                         </button>
                                     )
                                 )}
                             </div>
-                            <p className="mb-4 text-gray-400 font-rubik">
+                            <p className="mb-4 text-gray-400 font-rubik text-sm sm:text-base">
                                 or use your email account
                             </p>
                             {(
@@ -147,7 +153,7 @@ const Login = () => {
                                     placeholder={placeholder}
                                     value={formData[placeholder]}
                                     onChange={handleInputChange}
-                                    className="w-[60%] px-4 py-2 mb-3 rounded-md bg-[#F4F8F7]"
+                                    className="w-[80%] sm:w-[60%] px-4 py-2 mb-3 rounded-md bg-[#F4F8F7] text-sm sm:text-base"
                                     required
                                 />
                             ))}
@@ -159,41 +165,46 @@ const Login = () => {
                                         placeholder="Confirm Password"
                                         value={formData.ConfirmPassword}
                                         onChange={handleInputChange}
-                                        className="w-[60%] px-4 py-2 mb-3 rounded-md bg-[#F4F8F7]"
+                                        className="w-[80%] sm:w-[60%] px-4 py-2 mb-3 rounded-md bg-[#F4F8F7] text-sm sm:text-base"
                                         required
                                     />
                                     {passwordError && (
-                                        <p className="text-red-500 text-sm mt-1 w-[60%] text-left">
+                                        <p className="text-red-500 text-sm mt-1 w-[80%] sm:w-[60%] text-left">
                                             {passwordError}
                                         </p>
                                     )}
                                 </>
                             )}
-                            <a href="#" className="mb-8 mt-2">
-                                Forgot your password ?
+                            <a
+                                href="#"
+                                className="mb-6 mt-2 text-sm sm:text-base hover:underline"
+                            >
+                                Forgot your password?
                             </a>
                             <button
                                 type="submit"
                                 disabled={isSignUp && !!passwordError}
-                                className={`font-rubik tracking-wider px-15 py-2 bg-gradient-to-r from-[#41B49F] to-[#3AA7AE] text-white rounded-4xl transition-opacity duration-300 ${isSignUp && passwordError ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'}`}
+                                className={`font-rubik tracking-wider px-15 py-2 bg-gradient-to-r from-[#41B49F] to-[#3AA7AE] text-white rounded-[2rem] transition-opacity duration-300 text-sm sm:text-base ${isSignUp && passwordError ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90 cursor-pointer'}`}
                             >
                                 {isSignUp ? 'SIGN UP' : 'SIGN IN'}
                             </button>
                         </form>
                         <div
-                            className={`flex flex-col absolute h-full w-[360px] right-0 justify-center items-center bg-gradient-to-tr transition-transform duration-700 ease-in-out transform ${hasInteracted ? (isSignUp ? 'animate-stretch-shrink' : 'animate-stretch-shrinkLeft') : ''} ${isSignUp ? '-translate-x-[590px] from-[#3AAF9F] to-[#39B790]' : '-translate-x-0 from-[#3AAF9D] to-[#3AA7AE]'}`}
+                            className={`hidden md:flex flex-col absolute h-full w-full md:w-[360px] right-0 justify-center items-center bg-gradient-to-tr transition-transform duration-700 ease-in-out transform animate-panel ${isSignUp ? 'translate-x-[-590px] from-[#3AAF9F] to-[#39B790]' : 'translate-x-0 from-[#3AAF9D] to-[#3AA7AE]'}`}
                         >
-                            <h1 className="mb-6 text-white text-4xl font-rubik font-semibold">
+                            <h1 className="mb-6 text-white text-2xl md:text-4xl font-rubik font-semibold">
                                 {isSignUp ? 'Welcome Back' : 'Hello, Friend!'}
                             </h1>
-                            <p className="mb-4 w-[220px] text-[14px] text-white font-rubik text-center">
+                            <p className="mb-4 w-[220px] text-sm md:text-[14px] text-white font-rubik text-center">
                                 {isSignUp
                                     ? 'To keep connected with us please login with your personal info'
                                     : 'Enter your personal details and start journey with us'}
                             </p>
+
+                            {/* Button sign-in , sign-up */}
                             <button
                                 type="button"
-                                className="font-rubik tracking-wider px-15 py-2 border border-white text-white rounded-4xl hover:opacity-90 transition-opacity duration-300 cursor-pointer"
+                                className="font-rubik tracking-wider px-15 py-2 border border-white text-white rounded-[2rem] hover:opacity-90 transition-opacity duration-300 cursor-pointer text-sm md:text-base"
                                 onClick={() => {
                                     setIsSignUp(prev => !prev);
                                     setHasInteracted(true);
@@ -202,6 +213,18 @@ const Login = () => {
                                 {isSignUp ? 'SIGN IN' : 'SIGN UP'}
                             </button>
                         </div>
+                    </div>
+                    <div className="md:hidden flex justify-center mt-4">
+                        <button
+                            type="button"
+                            className="font-rubik tracking-wider px-6 py-2 border border-[#41B49F] text-[#41B49F] rounded-[2rem] hover:bg-[#41B49F] hover:text-white transition-all duration-300 text-sm sm:text-base"
+                            onClick={() => {
+                                setIsSignUp(prev => !prev);
+                                setHasInteracted(true);
+                            }}
+                        >
+                            {isSignUp ? 'SIGN IN' : 'SIGN UP'}
+                        </button>
                     </div>
                 </div>
             </div>

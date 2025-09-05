@@ -49,6 +49,7 @@
     font-weight: 800;
 }
 
+/* Keyframes cho animations */
 @keyframes stretchShrink {
     0% {
         width: 360px;
@@ -60,6 +61,7 @@
         width: 360px;
     }
 }
+
 @keyframes stretchShrinkLeft {
     0% {
         width: 360px;
@@ -72,10 +74,14 @@
     }
 }
 
-.animate-stretch-shrink {
+/* Áp dụng animations cho panel khi hasInteracted là true */
+.animate-panel {
+    animation: none;
+}
+.animate-panel.has-interacted-signup {
     animation: stretchShrink 0.7s ease-in-out;
 }
-.animate-stretch-shrinkLeft {
+.animate-panel.has-interacted-signin {
     animation: stretchShrinkLeft 0.7s ease-in-out;
 }
 

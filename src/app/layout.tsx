@@ -1,5 +1,5 @@
 // import type { Metadata } from 'next';
-import ReduxProvider from '../app/login/redux/ReduxProvider';
+import ReduxProvider from '@/app/login/redux/ReduxProvider';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
